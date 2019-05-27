@@ -1,0 +1,36 @@
+.container {
+  display: flex;
+}
+
+.content-block {
+  background-color: orange;
+  padding: 20px;
+  width: 80%;
+}
+
+.right-column {
+  background-color: brown;
+  width: 20%;
+}
+
+.js-top-column-container {
+  padding-top: 500px;
+}
+
+.js-top-column {
+  background-color: white;
+}
+
+.js-lower-column {
+  background-color: pink;
+  height: 500px;
+}
+
+.footer {
+  background-color: green;
+  height: 50px;
+}
+
+.longgrid {
+  background-color: blue;
+}
