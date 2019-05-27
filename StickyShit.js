@@ -26,15 +26,24 @@ const defaults = {
  */
  class StickyShit {
   constructor() {
-    console.log('INITIALIZED!!!!');
     this.settings = defaults;
     this.topColumn = document.querySelector(this.settings.topColumn);
+    this.topColumn.style.position = 'relative';
 
     this.topColumnContainer = document.querySelector(this.settings.topColumnContainer);
 
     this.lowerColumn = document.querySelector(this.settings.lowerColumn);
+    this.lowerColumn.style.position = 'relative';
     this.lowerColumnContainer = document.querySelector(this.settings.lowerColumnContainer);
 
+
+    if (this.topColumn) {
+      this.topColumn.sticky = true;
+    }
+
+    if (this.lowerColumn) {
+      this.lowerColumn.sticky = true;
+    }
 
     this.contentBlock = document.querySelector(this.settings.contentBlock);
     this.addHandlers = this.addHandlers.bind(this);
@@ -46,35 +55,47 @@ const defaults = {
 
   addHandlers() {
     setInterval(() => {
-      this.fixedBanner(this.topColumn, this.topColumnContainer, 'topColumn');
-      this.fixedBanner(this.lowerColumn, this.lowerColumnContainer, 'lowerColumn');
+       this.fixedBanner(this.topColumn, this.topColumnContainer, 'topColumn');
+       this.fixedBanner(this.lowerColumn, this.lowerColumnContainer, 'lowerColumn');
     }, 100);
 
     setTimeout(() => {
       console.log('ABSOLUTE');
       this.makeElementAbsoluteRelativeToParent(this.topColumn, this.topColumnContainer);
+      this.topColumn.sticky = false;
     }, 4000);
-  
+
     setTimeout(() => {
       console.log('ENLARGE UR PINUS');
-      this.lowerColumn.style.height = '700px';
+      this.lowerColumn.style.height = '200px';
     }, 8000);
     // window.addEventListener('scroll', topColumnScrollHandler);
     // window.addEventListener('scroll', lowerColumnScrollHandler);
   }
 
   fixedBanner(element, parent, banner) {
-    //console.log(this.getChoord(element).top);
     const stopScrolling = this.getChoord(element).top + element.offsetHeight > this.contentBlock.offsetHeight + this.getChoord(this.contentBlock).top;
 
     if (this.elementShouldBeGluedToTheBottom(element)) {
       console.log('elementShouldBeGluedToTheBottom');
+      console.log(element);
       this.toTheBottom(element, parent);
     }
 
     if(stopScrolling) {
       console.log('stopScrolling');
       this.toTheBottom(element, parent);
+    }
+
+    if(this.isElementInViewport(element) && (element.sticky && this.elementShouldBecomeSticky(element))) {
+      console.log('elementShouldBecomeSticky');
+      this.makeElementFixed(element);
+    }
+
+    if (this.areWeHeadingBack(element)) {
+      console.log('areWeHeadingBack');
+      console.log(this.areWeHeadingBack(element));
+      this.makeElementFixed(element);
     }
 
     if (this.didWeReachStartingPosition(element, parent)) {
@@ -87,10 +108,10 @@ const defaults = {
       console.log('going home!');
     }
 
-    if((this.isElementInViewport(element) && this.elementShouldBecomeSticky(element)) || this.areWeHeadingBack(element)) {
-      console.log('elementShouldBecomeSticky');
-      this.makeElementFixed(element);
-    }
+    // console.log(`in view: ${this.isElementInViewport(element)}`);
+    // console.log(`should be sticky: ${this.elementShouldBecomeSticky(element)}`);
+    // console.log(`heading back: ${this.areWeHeadingBack(element)}`);
+
     // console.log('------------');
   }
 
@@ -116,17 +137,24 @@ const defaults = {
   }
 
   toTheBottom(element, parent) {
-    parent.style.position = 'relative';
-    element.style.position = 'absolute';
     let delta = 0
     if (element.classList.contains('js-top-column')) {
       delta = this.contentBlock.offsetHeight - element.offsetHeight
     } else {
-      delta = this.contentBlock.offsetHeight - this.topColumn.offsetHeight - parseInt(this.topColumn.style.top, 10) - this.lowerColumn.offsetHeight;
+      let parentBannerTop =  0 ;
+      if (this.topColumn && this.topColumn.style.position == 'absolute') {
+        parentBannerTop = parseInt(this.topColumn.style.top, 10);
+      } else if (this.topColumn && this.topColumn.style.position == 'relative') {
+        parentBannerTop = 32;
+      }
+      delta = this.contentBlock.offsetHeight - this.topColumn.offsetHeight - parentBannerTop - this.lowerColumn.offsetHeight;
     }
-
-    console.log(delta);
+    parent.style.position = 'relative';
+    element.style.position = 'absolute';
     element.style.top = `${delta}px`;
+    console.log(element);
+    console.log(element.style.position);
+    console.log(delta);
   }
 
   isElementInViewport(el) {
@@ -147,140 +175,19 @@ const defaults = {
 
   elementShouldBeGluedToTheBottom(element) {
     // if (bannerNo === 'topColumn' && !this.topColumnNeedsToBeSticky) return false;
-     return window.pageYOffset > this.getChoord(element).top + element.offsetHeight && element.style.position == 'relative';
+     return window.pageYOffset > this.getChoord(element).top + element.offsetHeight && element.style.position == 'relative' && element.sticky;
   }
 
-
-  // addHandlers() {
-  //   const infographicPic = this.contentBlock.querySelector('.b-topic_pic_780') || this.contentBlock.querySelector('.b-topic_pic_940');
-  //   if (this.contentBlock && !infographicPic) {
-  //     this.sidebarTop = document.querySelector(this.settings.sidebarTop);
-
-
-  //     this.calculateMarginTop = this.calculateMarginTop.bind(this);
-  //     this.calculateMarginTop();
-
-
-  //     let topColumnScrollHandler = null;
-  //     if (this.firstBanner && this.topColumn && this.topColumnContainer) {
-  //       topColumnScrollHandler = () => this.fixedBanner(this.topColumn, this.topColumnContainer, 'topColumn');
-  //     }
-  //     let lowerColumnScrollHandler = null;
-  //     if (this.secondBanner && this.lowerColumn && this.lowerColumnContainer) {
-  //       lowerColumnScrollHandler = () => this.fixedBanner(this.lowerColumn, this.lowerColumnContainer, 'lowerColumn');
-  //     }
-
-
-  //     setTimeout(() => {
-  //       topColumnScrollHandler && topColumnScrollHandler();
-  //       window.addEventListener('scroll', topColumnScrollHandler);
-
-
-  //       lowerColumnScrollHandler && lowerColumnScrollHandler();
-  //       window.addEventListener('scroll', lowerColumnScrollHandler);
-
-
-  //       setInterval(() => {
-  //         if (this.shouldGlueToBottom()) {
-  //           console.log('GLUE!!!');
-  //           console.log(`contentBlock ${this.contentBlock.offsetHeight}`);
-  //           console.log(`sidebarTop ${this.sidebarTop.offsetHeight}`);
-  //           console.log(`topColumn ${this.topColumn.offsetHeight}`);
-  //           console.log(`lowerColumn ${this.lowerColumn.offsetHeight}`);
-
-
-  //           let top = this.contentBlock.offsetHeight - this.sidebarTop.offsetHeight - 220; // - this.sidebarTop.offsetHeight - this.topColumn.offsetHeight - 200;
-  //           if (this.topColumn && this.lowerColumn) {
-  //             this.makeElementAbsolute(this.topColumn, this.topColumnContainer);
-  //             this.makeElementAbsolute(this.lowerColumn, this.lowerColumnContainer, 0);
-  //           } else {
-  //             this.makeElementAbsolute(this.topColumn, this.topColumnContainer);
-  //           }
-  //         }
-  //       }, 200);
-
-
-  //       this.addBegunToFirstBanner();
-  //     }, this.settings.timeoutForPositions);
-  //   }
-  // }
-
-
-  // addBegunToFirstBanner() {
-  //   if (this.firstBanner && this.topColumn && this.topColumnContainer) {
-  //     window.Begun && window.Begun.Autocontext.Callbacks.register({
-  //       'inView': {
-  //         'ban_240x400': ({ sessionInViewTime }) => {
-  //           if (sessionInViewTime > this.settings.desiredBannerShowTimeInSeconds) {
-  //             this.topColumnNeedsToBeSticky = false;
-  //             this.makeElementAbsolute(this.topColumn, this.topColumnContainer);
-  //             window.Begun.Autocontext.Callbacks.unregister('inView', 'ban_240x400');
-  //           }
-  //         }
-  //       }
-  //     });
-  //   }
-  // }
-
-
-  // calculateMarginTop() {
-  //   // В случае если у верхнего блока есть margin-bottom - применяем его значение к переданному параметру marginTopBanner
-  //   const sidebarTopStyles = window.getComputedStyle(this.sidebarTop);
-  //   this.diffMarginTop = this.settings.marginTopBanner - parseInt(sidebarTopStyles.marginBottom, 10);
-  // }
-
-
-  //  /**
-  //  * Метод отвечающий за фиксирование баннера
-  //  */
-  // fixedBanner(element, container, bannerNo) {
-  //   if (this.isThereEnoughSpaceForStickyBanner(element)) {
-  //     if (this.elementShouldBecomeSticky(element, bannerNo) || this.areWeHeadingBack(element)) {
-  //       this.makeElementFixed(element);
-  //     } else if (this.didWeReachStartingPosition(element, container)) {
-  //       this.makeElementRelative(element);
-  //     } else if (this.shouldScrollStop()) {
-  //       this.makeElementAbsolute(element, container);
-  //     }
-  //   }
-  //   // } else if (this.shouldGlueToBottom() && bannerNo === 'lowerColumn') {
-  //   //   this.makeElementAbsolute(this.lowerColumn, this.lowerColumnContainer);
-  //   // }
-  // }
-
-
-
-
-
-  // shouldScrollStop() {
-  //   return this.topColumn && this.shouldStop(this.topColumn) || this.lowerColumn && this.shouldStop(this.lowerColumn);
-  // }
-
-
-  // shouldStop(element) {
-  //   if (this.settings.brief && element === this.topColumn) {
-  //     return true;
-  //   }
-  //   return this.getChoord(this.contentBlock).top + this.contentBlock.offsetHeight < this.getChoord(element).top + element.offsetHeight;
-  // }
-
-
-  // shouldGlueToBottom() {
-  //   //debugger;
-  //   if (this.lowerColumn) {
-  //     console.log("LOWER");
-  //     return window.pageYOffset > this.getChoord(this.lowerColumn).top + this.lowerColumn.offsetHeight;
-  //   }
-  //   return window.pageYOffset > this.getChoord(this.topColumn).top + this.topColumn.offsetHeight;
-  // }
-
-
   didWeReachStartingPosition(element, parent) {
-    return this.getChoord(element).top <  this.getChoord(parent).top + parent.offsetHeight;
+    // console.log(this.getChoord(parent).top);
+    // console.log(parent.offsetHeight)
+    // console.log(this.getChoord(element).top)
+    return this.getChoord(element).top <  this.getChoord(parent).top;
   }
 
 
   areWeHeadingBack(element) {
+    console.log(`areWeHeadingBack: ${window.pageYOffset < this.getChoord(element).top && element.style.position === 'absolute'}`);
     return window.pageYOffset < this.getChoord(element).top && element.style.position === 'absolute';
   }
 

@@ -14,7 +14,7 @@
 }
 
 .js-top-column-container {
-  padding-top: 500px;
+  padding-top: 150px;
 }
 
 .js-top-column {
@@ -23,7 +23,7 @@
 
 .js-lower-column {
   background-color: pink;
-  height: 500px;
+  height: 100px;
 }
 
 .footer {
